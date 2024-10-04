@@ -40,4 +40,4 @@ Pretty simple ammunation robbery
   - ox_inventory
   - qbx_core
  
-  feel free to join discord discord.gg/EPbtPVmtAY for support
+  feel free to join discord https://discord.gg/EPbtPVmtAY for support
