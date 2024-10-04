@@ -33,4 +33,11 @@ Pretty simple ammunation robbery
  
   - Add interact support
  
+  ***DEPENDENCIES***
+
+  - oxmysql
+  - ox_target
+  - ox_inventory
+  - qbx_core
+ 
   feel free to join discord discord.gg/EPbtPVmtAY for support
