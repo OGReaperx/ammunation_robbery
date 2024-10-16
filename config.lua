@@ -20,7 +20,7 @@ Config.AmmunitionLocations = {
             },
             { 
                 id = 2, 
-                coords = vec3(13.85, -1107.7, 30.4),  
+                coords = vec3(13.85, -1107.7, 30.4),
                 rewards = { 
                     { item = "WEAPON_KNIFE", min = 1, max = 1, chance = 60 },  
                     { item = "WEAPON_BAT", min = 1, max = 1, chance = 85 }
@@ -60,7 +60,7 @@ Config.AmmunitionLocations = {
 
 
 -- ox_lib progress
-Config.ProgressBarType = 'circle'
+Config.ProgressBarType = 'is_ui' -- 'is_ui' or 'circle'
 
 -- Skill check
 Config.SkillCheck = {

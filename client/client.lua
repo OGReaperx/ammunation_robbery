@@ -52,7 +52,8 @@ RegisterNetEvent('ammunition:startSkillCheck', function(locationId, lootAreaId)
         return
     end
 
-    lib.notify({title = 'Success', description = 'You are looting the area!', type = 'inform'})
+    --lib.notify({title = 'Success', description = 'You are looting the area!', type = 'inform'})
+    exports["is_ui"]:Notify("Good Shit", "You are <span>looting the area!</span>", 5000, "success", "fa-solid fa-box")
     TriggerServerEvent('ammunition:skillCheckResult', locationId, lootAreaId, true)
 end)
 
@@ -69,10 +70,23 @@ RegisterNetEvent('ammunition:playLootingAnimation', function(locationId, lootAre
 
     TaskPlayAnim(playerPed, animation.dict, animation.name, 8.0, -8.0, animation.duration or -1, animation.flag or 1, 0, false, false, false)
 
-    if Config.ProgressBarType == 'circle' then
+    if Config.ProgressBarType == 'is_ui' then
+        exports["is_ui"]:ProgressBar({
+            title = "Looting...",
+            icon = 'fa-solid fa-box',
+            duration = animation.duration or 5000,
+            useWhileDead = false,
+            canCancel = false,
+            animation = {
+                dict = animation.dict,
+                name = animation.name,
+            },
+        })
+    elseif Config.ProgressBarType == 'circle' then
         lib.progressCircle({
             duration = animation.duration or 5000, 
-            position = 'top-right', label = 'Looting...', 
+            position = 'top-right', 
+            label = 'Looting...', 
             useWhileDead = false, 
             canCancel = false
         })
@@ -89,6 +103,6 @@ RegisterNetEvent('ammunition:playLootingAnimation', function(locationId, lootAre
     isLooting = false
     TriggerServerEvent('ammunition:finishLooting', locationId, lootAreaId)
 
-    -- Call the police after looting is finished
+
     PoliceCallClient()
 end)

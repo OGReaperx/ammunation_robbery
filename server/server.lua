@@ -5,6 +5,14 @@ local globalCooldowns = {}
 local activeLooting = {}
 local zoneLockdown = {}  -- Tracks if a zone is in lockdown
 
+local notifyStyle = {
+    icon = "fa-solid fa-sack-dollar",
+    primaryColor = "#FF425D",
+    backgroundIcon = { from = "#FC3955", to = "#861A20" },
+    sound = { play = true, type = "notifySound6", volume = 5 }
+}
+
+
 -- Function to start a lockdown for all zones except the one being looted
 local function startLockdown(excludeZone)
     for zoneId, _ in pairs(Config.AmmunitionLocations) do
@@ -103,11 +111,7 @@ local function tryAddXP(source, citizenid, amount)
         local newXP = currentXP + amount
         MySQL.update('UPDATE players SET xp = ? WHERE citizenid = ?', { newXP, citizenid }, function(success)
             if success then
-                TriggerClientEvent('ox_lib:notify', source, {
-                    title = "XP Gained",
-                    description = 'You gained ' .. amount .. ' XP',
-                    type = "success"
-                })
+                TriggerClientEvent('is_ui:Notify', source, 'XP Gained', 'You gained ' .. amount .. ' XP', 5000, notifyStyle)
             end
         end)
     end)
@@ -161,11 +165,7 @@ local function giveItemsToPlayer(source, lootArea, itemCount, rareChance, citize
     end
 
     if not foundItem then
-        TriggerClientEvent('ox_lib:notify', source, {
-            title = "Looting",
-            description = "You didn't find any items.",
-            type = "error"
-        })
+        TriggerClientEvent('is_ui:Notify', source, 'Looting', "You didn't find any items.", 5000, notifyStyle)
     end
 
     activeLooting[source .. ":" .. lootArea.id] = nil
@@ -196,19 +196,10 @@ local function isHoldingRequiredItem(source, requiredItems)
     end
 
     if hasRequiredItemInInventory then
-        TriggerClientEvent('ox_lib:notify', source, {
-            title = "Looting",
-            description = "You must be holding the required item to loot this area.",
-            type = "warning"
-        })
+        TriggerClientEvent('is_ui:Notify', source, 'Looting', 'You must be holding the required item to loot this area.', 5000, notifyStyle)
     else
-        TriggerClientEvent('ox_lib:notify', source, {
-            title = "Hang on",
-            description = "You lack the required item to loot this area.",
-            type = "error"
-        })
+        TriggerClientEvent('is_ui:Notify', source, 'Hang on', 'You lack the required item to loot this area.', 5000, notifyStyle)
     end
-
     return false
 end
 
@@ -217,29 +208,17 @@ AddEventHandler('ammunition:checkLEO', function(locationId, lootAreaId)
     local source = source
 
     if IsPlayerRestricted(source) then
-        TriggerClientEvent('ox_lib:notify', source, {
-            title = "Wait",
-            description = 'You\'re a law enforcer, wtf are you doing',
-            type = 'warning'
-        })
+        TriggerClientEvent('is_ui:Notify', source, 'Wait', 'You\'re a law enforcer, wtf are you doing', 5000, notifyStyle)
         return
     end
 
     if isZoneInLockdown(locationId) then
-        TriggerClientEvent('ox_lib:notify', source, {
-            title = "Lockdown",
-            description = 'This zone is in lockdown due to another robbery!',
-            type = 'error'
-        })
+        TriggerClientEvent('is_ui:Notify', source, 'Lockdown', 'This zone is in lockdown due to another robbery!', 5000, notifyStyle)
         return
     end
 
     if activeLooting[source .. ":" .. locationId .. ":" .. lootAreaId] then
-        TriggerClientEvent('ox_lib:notify', source, {
-            title = "Already Looted",
-            description = 'You have already looted this area.',
-            type = 'error'
-        })
+        TriggerClientEvent('is_ui:Notify', source, 'Already Looted', 'You have already looted this area.', 5000, notifyStyle)
         return
     end
 
@@ -251,11 +230,7 @@ AddEventHandler('ammunition:checkLEO', function(locationId, lootAreaId)
     end
 
     if cooldowns[locationId .. ":" .. lootAreaId] then
-        TriggerClientEvent('ox_lib:notify', source, {
-            title = "Cooldown",
-            description = 'You greedy fuck, try again later',
-            type = 'error'
-        })
+        TriggerClientEvent('is_ui:Notify', source, 'Cooldown', 'You greedy fuck, try again later', 5000, notifyStyle)
         activeLooting[source .. ":" .. locationId .. ":" .. lootAreaId] = nil
         return
     end
@@ -266,11 +241,7 @@ AddEventHandler('ammunition:checkLEO', function(locationId, lootAreaId)
     end
 
     if countLEOPlayers() < Config.MinLeo then
-        TriggerClientEvent('ox_lib:notify', source, {
-            title = "Not Enough LEO",
-            description = 'Not enough LEO on duty.',
-            type = 'error'
-        })
+        TriggerClientEvent('is_ui:Notify', source, 'Not Enough LEO', 'Not enough LEO on duty.', 5000, notifyStyle)
         activeLooting[source .. ":" .. locationId .. ":" .. lootAreaId] = nil
         return
     end
@@ -293,11 +264,7 @@ AddEventHandler('ammunition:skillCheckResult', function(locationId, lootAreaId, 
                 resetAttempts(locationId, lootAreaId)
             end)
         else
-            TriggerClientEvent('ox_lib:notify', source, {
-                title = 'FYI',
-                description = 'You suck.', 
-                type = 'warning'
-            })
+            TriggerClientEvent('is_ui:Notify', source, 'FYI', 'You suck.', 5000, notifyStyle)
         end
 
         activeLooting[source .. ":" .. locationId .. ":" .. lootAreaId] = nil
