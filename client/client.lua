@@ -1,19 +1,72 @@
 local isLooting = false
 
--- Function to call police dispatch from the client side
 function PoliceCallClient()
     local playerPed = PlayerPedId()
     local coords = GetEntityCoords(playerPed)
+    
     local streetHash, crossingHash = GetStreetNameAtCoord(coords.x, coords.y, coords.z)
     local streetName = GetStreetNameFromHashKey(streetHash)
+
 
     if streetName == "" then
         streetName = "an unknown street"
     end
 
-    -- Send the street name and player coordinates to the server
-    TriggerServerEvent('ammunition:policeCall', coords, streetName)
+    local vehicle = GetVehiclePedIsIn(playerPed, false)
+
+    local vehicleData = nil
+    if vehicle and vehicle ~= 0 then
+        vehicleData = {
+            name = GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)),
+            plate = GetVehicleNumberPlateText(vehicle),
+            color = GetVehicleColours(vehicle),
+            class = GetVehicleClass(vehicle),
+            doors = GetVehicleDoorCount(vehicle)
+        }
+    end
+
+    local dispatchData = {
+        message = 'Ammunition Robbery',
+        codeName = 'ammunitionRobbery',
+        code = '10-15',
+        icon = 'fas fa-store',
+        priority = 3,
+        coords = coords,
+        street = streetName,
+        heading = GetEntityHeading(playerPed),
+        vehicle = vehicleData and vehicleData.name or nil,
+        plate = vehicleData and vehicleData.plate or nil,
+        color = vehicleData and vehicleData.color or nil,
+        class = vehicleData and vehicleData.class or nil,
+        doors = vehicleData and vehicleData.doors or nil,
+        jobs = { 'police', 'bcso' }
+    }
+
+    if Config.Dispatch == 'ps' then
+        TriggerServerEvent('ps-dispatch:server:notify', dispatchData)
+    elseif Config.Dispatch == 'cd' then
+        TriggerServerEvent('cd_dispatch:AddNotification', {
+            job_table = {'police', 'bcso', }, -- add more here
+            coords = coords,
+            title = '10-15 - Ammunition Robbery',
+            message = 'Aummunation Robbery in progress at ' .. streetName,
+            flash = 0,
+            unique_id = tostring(playerPed),
+            sound = 1,
+            blip = {
+                sprite = 431,
+                scale = 1.2,
+                colour = 3,
+                falshes = false,
+                text = '911 - Aummunation Robbery',
+                time = 5,
+                radius = 0,
+            }
+        })
+    end
 end
+
+
 
 CreateThread(function()
     for _, location in ipairs(Config.AmmunitionLocations) do
@@ -55,6 +108,7 @@ RegisterNetEvent('ammunition:startSkillCheck', function(locationId, lootAreaId)
     --lib.notify({title = 'Success', description = 'You are looting the area!', type = 'inform'})
     exports["is_ui"]:Notify("Good Shit", "You are <span>looting the area!</span>", 5000, "success", "fa-solid fa-box")
     TriggerServerEvent('ammunition:skillCheckResult', locationId, lootAreaId, true)
+    PoliceCallClient()
 end)
 
 RegisterNetEvent('ammunition:playLootingAnimation', function(locationId, lootAreaId)
@@ -63,7 +117,7 @@ RegisterNetEvent('ammunition:playLootingAnimation', function(locationId, lootAre
 
     local playerPed = PlayerPedId()
     local lootArea = Config.AmmunitionLocations[locationId].lootAreas[lootAreaId]
-    local animation = lootArea.animation or { dict = "anim@scripted@player@mission@tun_table_grab@cash@", name = "grab", duration = 5000 }
+    local animation = lootArea.animation or { dict = "anim@scripted@player@mission@tun_table_grab@cash@", name = "grab", duration = 15000 }
 
     RequestAnimDict(animation.dict)
     while not HasAnimDictLoaded(animation.dict) do Wait(10) end
@@ -74,7 +128,7 @@ RegisterNetEvent('ammunition:playLootingAnimation', function(locationId, lootAre
         exports["is_ui"]:ProgressBar({
             title = "Looting...",
             icon = 'fa-solid fa-box',
-            duration = animation.duration or 5000,
+            duration = animation.duration or 15000,
             useWhileDead = false,
             canCancel = false,
             animation = {

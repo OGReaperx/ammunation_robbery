@@ -64,7 +64,7 @@ Config.ProgressBarType = 'is_ui' -- 'is_ui' or 'circle'
 
 -- Skill check
 Config.SkillCheck = {
-    difficulty = {'easy', 'medium', {areaSize = 35, speedMultiplier = 1}, 'easy'},  
+    difficulty = {'easy', 'medium', 'medium', 'hard', 'hard', {areaSize = 35, speedMultiplier = 1}, 'easy'},  
     keys = {'w', 'a', 's', 'd'}
 }
 
@@ -107,4 +107,4 @@ Config.MinLeo = 0
 
 Config.MaxFailedAttempts = 4
 
-Config.EnableDispatch = true
+Config.Dispatch = 'ps' -- 'ps' = ps-dispatch 'cd' = cd-dispatch

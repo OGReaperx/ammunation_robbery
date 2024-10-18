@@ -35,29 +35,51 @@ local function isZoneInLockdown(locationId)
 end
 
 RegisterNetEvent('ammunition:policeCall')
-AddEventHandler('ammunition:policeCall', function(coords, streetName)
-    local source = source  -- Get the player ID who triggered this event
+AddEventHandler('ammunition:policeCall', function(coords, streetName, vehicleData)
 
-    -- Trigger dispatch notification
-    TriggerEvent('cd_dispatch:AddNotification', {
-        job_table = {'police', 'sheriff', 'state', 'ambulance'},
+    local dispatchData = {
+        message = 'Ammunition Robbery',
+        codeName = 'ammunitionRobbery',
+        code = '10-15',
+        icon = 'fas fa-store',
+        priority = 3,
         coords = coords,
-        title = '10-15 - Ammunition Robbery',
-        message = 'A player is robbing an ammunition at ' .. streetName,
-        flash = 0,
-        unique_id = tostring(source),
-        sound = 1,
-        blip = {
-            sprite = 431,
-            scale = 1.2,
-            colour = 3,
-            flashes = false,
-            text = '911 - Ammunition Robbery',
-            time = 5,
-            radius = 0,
-        }
-    })
+        street = streetName,
+        heading = GetEntityHeading(GetPlayerPed(source)),
+        vehicle = vehicleData and vehicleData.name or nil,
+        plate = vehicleData and vehicleData.plate or nil,
+        color = vehicleData and vehicleData.color or nil,
+        class = vehicleData and vehicleData.class or nil,
+        doors = vehicleData and vehicleData.doors or nil,
+        jobs = { 'police', 'bcso', }
+    }
+
+    if Config.Dispatch == 'ps' then
+        TriggerEvent('ps-dispatch:server:notify', dispatchData)
+    elseif Config.Dispatch == 'cd' then
+        TriggerEvent('cd_dispatch:AddNotification', {
+            job_table = {'police', 'bcso', }, -- add more here
+            coords = coords,
+            title = '10-15 - Ammunition Robbery',
+            message = 'Aummunation Robbery in progress at ' .. streetName,
+            flash = 0,
+            unique_id = tostring(GetPlayerPed(source)),
+            sound = 1,
+            blip = {
+                sprite = 431,
+                scale = 1.2,
+                colour = 3,
+                falshes = false,
+                text = '911 - Aummunation Robbery',
+                time = 5,
+                radius = 0,
+            }
+        })
+    end
 end)
+
+
+
 
 local function countLEOPlayers()
     local totalLEO = 0
